@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 
-from config import ConfigEnv, Development
+from config import app_config
 from redis_app.red import redis_client
 from duplication.models import add_model, get_model_df, ModelsCol, add_lpus
 from duplication.users import add_users
@@ -13,23 +13,23 @@ def get_data_from_db():
 
 
 def get_dataframe_from_parquet():
-    return pd.read_parquet(ConfigEnv.PARQUET_PATH)
+    return pd.read_parquet(app_config.PARQUET_PATH)
 
 
 def save_to_parquet(dataframe):
-    dataframe.to_parquet(ConfigEnv.PARQUET_PATH, compression="gzip")
+    dataframe.to_parquet(app_config.PARQUET_PATH, compression="gzip")
 
 
 def get_dataframe_from_file():
     dataframe: pd.DataFrame = pd.read_excel(
-        Development.EXCEL_FILE_PATH,
+        app_config.EXCEL_FILE_PATH,
         dtype=str,
     )
     return dataframe
 
 
 def get_df():
-    if ConfigEnv.ENV == "development":
+    if app_config.ENV == "development":
         df = get_dataframe_from_file()
     else:
         df = get_data_from_db()

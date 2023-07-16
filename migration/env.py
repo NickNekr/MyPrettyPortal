@@ -9,10 +9,10 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-from src.config import ConfigDB
+from src.config import app_config
 from src.database.database import db
 
-config.set_main_option("sqlalchemy.url", ConfigDB.SQLALCHEMY_DATABASE_URI)
+config.set_main_option("sqlalchemy.url", app_config.SQLALCHEMY_DATABASE_URI)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

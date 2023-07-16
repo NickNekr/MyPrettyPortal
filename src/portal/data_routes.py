@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 
-from config import ConfigApp
+from config import app_config
 from database.database import db
 from database.models import User, LpusMo
 
@@ -20,7 +20,7 @@ def add_user():
     db.session.commit()
     return (
         jsonify(message="User added!", user_id=user.id),
-        ConfigApp.ResponseStatusCode.OK,
+        app_config.ResponseStatusCode.OK,
     )
 
 
@@ -29,7 +29,7 @@ def get_filial(lpu_id):
     filials = [lpu.lpu_id for lpu in LpusMo.query.filter(LpusMo.mo_id == lpu_id)]
     return (
         jsonify(message=f"Filials of {lpu_id}!", filleals=filials),
-        ConfigApp.ResponseStatusCode.OK,
+        app_config.ResponseStatusCode.OK,
     )
 
 
@@ -46,7 +46,7 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
 
-    return jsonify(message="User deleted!"), ConfigApp.ResponseStatusCode.OK
+    return jsonify(message="User deleted!"), app_config.ResponseStatusCode.OK
 
 
 @data_bp.get("/<int:user_id>")
@@ -69,5 +69,5 @@ def check_user(user_id):
 
     return (
         jsonify(message="User founded!", user=user_dict),
-        ConfigApp.ResponseStatusCode.OK,
+        app_config.ResponseStatusCode.OK,
     )

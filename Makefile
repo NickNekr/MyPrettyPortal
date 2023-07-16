@@ -17,7 +17,7 @@ restart_db:
 redis:
 	docker run --name redis -d --rm -p6379:6379 redis:latest
 
-include ./.env
+include .env
 local_up:
 	poetry run alembic upgrade head && poetry run python src/wsgi.py
 
