@@ -6,64 +6,6 @@ from .database import db
 
 
 """
-CREATE TABLE role (
-    id SERIAL PRIMARY KEY,
-    role_id INTEGER UNIQUE,
-    role_name VARCHAR(64) NOT NULL
-);
-
-CREATE TABLE lpus (
-    id SERIAL PRIMARY KEY,
-    lpus_id INTEGER UNIQUE,
-    lpus_name VARCHAR(255) NOT NULL,
-    ogrn VARCHAR(16) NOT NULL
-);
-
-CREATE TABLE specialities (
-    id SERIAL PRIMARY KEY,
-    spec_code INTEGER UNIQUE,
-    spec_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE users_additional_info (
-    user_id INTEGER PRIMARY KEY REFERENCES users (id),
-    phone VARCHAR(16),
-    email VARCHAR(255)
-);
-
-CREATE TABLE users_to_role (
-    users_id INTEGER PRIMARY KEY REFERENCES users (id),
-    role_id INTEGER REFERENCES role (id)
-);
-
-CREATE TABLE user_to_specialisation (
-    users_id INTEGER PRIMARY KEY REFERENCES users (id),
-    spec_id INTEGER REFERENCES specialities (id)
-);
-
-CREATE TABLE user_to_lpu (
-    users_id INTEGER PRIMARY KEY REFERENCES users (id),
-    lpus_id INTEGER REFERENCES lpus (id)
-);
-
-CREATE TABLE lpus_to_mo (
-    lpus_id INTEGER PRIMARY KEY REFERENCES lpus (id),
-    mo_id INTEGER NOT NULL REFERENCES lpus (id)
-);
-
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    login VARCHAR(128),
-    last_name VARCHAR(64),
-    first_name VARCHAR(64),
-    second_name VARCHAR(64),
-    snils VARCHAR(12),
-    created_at TIMESTAMPTZ NOT NULL,
-    changed_at TIMESTAMPTZ,
-    FOREIGN KEY (id) REFERENCES users_additional_info (user_id)
-);
-
-
 CREATE OR REPLACE FUNCTION update_time()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -119,6 +61,9 @@ class Role(db.Model):
     role_id = db.Column(db.Integer, primary_key=True)
     role_name = db.Column(db.String(128), nullable=False)
 
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+
     def __init__(self, data: dict):
         self.role_id = data["USER_ROLE_ID"]
         self.role_name = data["USER_ROLE"]
@@ -130,6 +75,9 @@ class Lpu(db.Model):
     lpu_name = db.Column(db.String(255))
     ogrn = db.Column(db.String(16))
 
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+
     def __init__(self, data: dict):
         self.id = data["LPU_ID"] if "LPU_ID" in data else data["MO_ID"]
         self.lpu_name = data["LPU_NAME"] if "LPU_NAME" in data else data["MO_NAME"]
@@ -140,6 +88,9 @@ class Specialities(db.Model):
     __tablename__ = "specialities"
     spec_code = db.Column(db.Integer, primary_key=True)
     spec_name = db.Column(db.String(255), nullable=False)
+
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data):
         self.spec_code = data["SPEC_CODE"]
@@ -155,8 +106,9 @@ class UsersRole(db.Model):
         nullable=False,
     )
     role_id = db.Column(db.Integer, db.ForeignKey("role.role_id"))
+
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
-    changed_at = db.Column(db.DateTime(timezone=True))
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data: dict):
         self.users_id = data["USER_ID"]
@@ -174,7 +126,7 @@ class UsersSpec(db.Model):
     spec_id = db.Column(db.Integer, db.ForeignKey("specialities.spec_code"))
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
-    changed_at = db.Column(db.DateTime(timezone=True))
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data: dict):
         self.users_id = data["USER_ID"]
@@ -192,7 +144,7 @@ class UsersLpu(db.Model):
     lpu_id = db.Column(db.String(32), db.ForeignKey("lpus.id"))
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
-    changed_at = db.Column(db.DateTime(timezone=True))
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
 
 class LpusMo(db.Model):
@@ -209,7 +161,7 @@ class LpusMo(db.Model):
     )
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
-    changed_at = db.Column(db.DateTime(timezone=True))
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data: dict):
         self.lpu_id = data["LPU_ID"]
@@ -227,6 +179,9 @@ class AdditionalInfo(db.Model):
     phone = db.Column(db.String(64))
     email = db.Column(db.String(255))
     region = db.Column(db.String(128))
+
+    created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data: dict):
         self.user_id = data.get("USER_ID")
@@ -248,7 +203,7 @@ class User(db.Model):
     second_name = db.Column(db.String(64))
     snils = db.Column(db.String(12))
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
-    changed_at = db.Column(db.DateTime(timezone=True))
+    changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
     def __init__(self, data: dict):
         self.login = data.get("LOGIN")
