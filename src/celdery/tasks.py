@@ -4,10 +4,6 @@ import traceback
 from .celery import celery_app
 from redis_app.red import redis_client
 from duplication.update_state import main_update
-from config import setup_logger
-
-
-setup_logger("celery_tasks.log")
 
 
 # for test

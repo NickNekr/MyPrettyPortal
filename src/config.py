@@ -1,78 +1,50 @@
 import os
 from dotenv import load_dotenv
-import logging
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv()
 
 
-assert load_dotenv(
-    "/web/.env"
-), """Can't load the environment:(
-                                        Set in .env file: 
-                                        if DB env:
-                                            DB_USER=
-                                            DB_PASSWORD=
-                                            DB_NAME=
-                                            DB_HOST=
-                                            DB_PORT=
-                                            DB_TIMEZONE= (for example: Europe/Moscow)
-                                        FLASK_ENV=production/development
-                                        """
-
-
-def setup_logger(filename):
-    logging.basicConfig(
-        level=logging.ERROR,
-        filename=filename,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-
-
-class Variables:
-    local_hash = {}
-
-
-class Config:
+class Config(object):
     TZ = os.environ.get("DB_TIMEZONE")
 
-
-class ConfigDB(Config):
-    PASSWORD = os.environ.get("DB_PASSWORD")
     HOST = os.environ.get("DB_HOST")
     DB = os.environ.get("DB_NAME")
     USERNAME = os.environ.get("DB_USER")
     PORT = os.environ.get("DB_PORT")
+    PASSWORD = os.environ.get("DB_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
+    PARQUET_PATH = "./duplication/data.parquet"
 
-class ConfigApp(Config):
-    class Web:
+    class FlaskApp(object):
         PORT = 5000
         HOST = "0.0.0.0"
         DEBUG = True
 
         BASE_URL = f"http://{HOST}:{PORT}"
 
-    class ResponseStatusCode:
+    class ResponseStatusCode(object):
         OK = 200
         NOT_FOUND = 404
         BAD_REQUEST = 400
 
 
-class ConfigEnv(ConfigApp):
-    ENV = os.environ.get("FLASK_ENV")
-    PARQUET_PATH = "./duplication/data.parquet"
-
-    # SPEC = [
-    #     "SPEC_CODE",
-    #     "SPEC_NAME",
-    # ]
-    # LPU = ["LPU_ID", "LPU_NAME", "OGRN"]
-    # LPU_TO_MO = ["LPU_ID", "MO_ID"]
-    # MO = ["MO_ID", "MO_NAME"]
+class ProductionConfig(Config):
+    ENV = "production"
+    DEBUG = False
 
 
-class Production(Config):
-    pass
+class DevelopmentConfig(Config):
+    ENV = "development"
+    DEBUG = True
 
-
-class Development(Config):
     EXCEL_FILE_PATH = "./duplication/database.xlsx"
+
+
+class TestingConfig(Config):
+    ENV = "testing"
+    DEBUG = True
+
+
+app_config = DevelopmentConfig()
