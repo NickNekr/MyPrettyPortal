@@ -17,6 +17,18 @@ class Config(object):
 
     PARQUET_PATH = "./duplication/data.parquet"
 
+    TABLES_LIST = [
+        "role",
+        "lpus",
+        "specialities",
+        "users_to_role",
+        "users_to_specialisation",
+        "users_to_lpu",
+        "lpus_to_mo",
+        "users_additional_info",
+        "users",
+    ]
+
     class FlaskApp(object):
         PORT = 5000
         HOST = "0.0.0.0"

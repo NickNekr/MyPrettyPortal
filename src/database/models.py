@@ -9,50 +9,25 @@ from .database import db
 CREATE OR REPLACE FUNCTION update_time()
 RETURNS TRIGGER AS $$
 BEGIN
-    UPDATE users
-    SET changed_at = NOW() 
-    WHERE id = NEW.users_id;
+    NEW.changed_at = NOW(); 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER update_time_trigger_usc
-AFTER UPDATE ON user_to_specialisation
+BEFORE UPDATE ON user_to_specialisation
 FOR EACH ROW
 EXECUTE FUNCTION update_time();
 
 CREATE TRIGGER update_time_trigger_utr
-AFTER UPDATE ON users_to_role 
+BEFORE UPDATE ON users_to_role 
 FOR EACH ROW
 EXECUTE FUNCTION update_time();
 
 CREATE TRIGGER update_time_trigger_utl
-AFTER UPDATE ON user_to_lpu 
+BEFORE UPDATE ON user_to_lpu 
 FOR EACH ROW
 EXECUTE FUNCTION update_time();
-
-CREATE OR REPLACE FUNCTION update_changed_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.changed_at := NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_time_trigger_u
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION update_changed_at();
-
-CREATE INDEX idx_role ON role (role_id);
-CREATE INDEX idx_lpus ON lpus (lpus_id);
-CREATE INDEX idx_specialities ON specialities (spec_code);
-CREATE INDEX idx_users_additional_info ON users_additional_info (user_id);
-CREATE INDEX idx_users_to_role ON users_to_role (users_id, role_id);
-CREATE INDEX idx_users_to_specialisation ON users_to_specialisation (users_id, spec_id);
-CREATE INDEX idx_user_to_lpu ON user_to_lpu (users_id, lpus_id);
-CREATE INDEX idx_lpus_to_mo ON lpus_to_mo (mo_id, lpus_id);
-CREATE INDEX idx_users ON users (login);
 """
 
 
@@ -216,24 +191,3 @@ class User(db.Model):
     role = relationship(UsersRole, backref="user", cascade="all, delete-orphan")
     spec = relationship(UsersSpec, backref="user", cascade="all, delete-orphan")
     addit = relationship(AdditionalInfo, backref="user", cascade="all, delete-orphan")
-
-
-@event.listens_for(AdditionalInfo, "before_update")
-def user_update_handler(mapper, connection, target):
-    connection.execute(
-        text("UPDATE users SET changed_at = NOW() WHERE id = :user_id").params(
-            user_id=target.users_id
-        )
-    )
-
-
-@event.listens_for(UsersRole, "before_update")
-@event.listens_for(UsersLpu, "before_update")
-@event.listens_for(UsersSpec, "before_update")
-def user_update_handler(mapper, connection, target: User):
-    target.changed_at = datetime.now()
-
-
-@event.listens_for(User, "before_update")
-def user_update_handler(mapper, connection, target: User):
-    target.changed_at = datetime.now()
