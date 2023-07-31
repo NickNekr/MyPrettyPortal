@@ -17,5 +17,5 @@ def main_update():
         first_duplication()
         return
     dataframes = get_merged_dataframes()
-    add_data(dataframes["add"])
+    add_data(dataframes["new"])
     save_to_parquet(dataframes["all_data"])

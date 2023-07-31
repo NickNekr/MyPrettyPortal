@@ -59,15 +59,20 @@ def change_main_dataframe(frame: pd.DataFrame):
 def get_merged_dataframes():
     old_df = get_dataframe_from_parquet()
     new_df = get_df()
+
+    login_to_id: dict = redis_client.get("login_to_id")
+
     result = old_df.merge(new_df, how="outer", indicator=True)
-    without_both = result[result["_merge"] != "both"]
-    for_del_df = without_both[without_both["_merge"] == "left_only"]
-    for_add_df = without_both[without_both["_merge"] != "left_only"]
-    result.drop("_merge", axis=1, inplace=True)
+    for_del_df = result[result["_merge"] == "left_only"]
+    right_only = result[result["_merge"] == "right_only"]
+    in_saved_login = right_only["LOGIN"].isin(login_to_id)
+    new_data_df = right_only[~in_saved_login]
+    changed_data_df = right_only[in_saved_login]
     return {
-        "add": for_add_df,
+        "new": new_data_df,
+        "changed": changed_data_df,
         "del": for_del_df,
-        "all_data": result,
+        "all_data": new_df,
     }
 
 
