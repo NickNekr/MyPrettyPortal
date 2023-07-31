@@ -80,10 +80,16 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.ForeignKeyConstraint(
-            ["role_id"], ["role.role_id"], name="users_to_role_role_id_fkey"
+            ["role_id"],
+            ["role.role_id"],
+            name="users_to_role_role_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
-            ["users_id"], ["users.id"], name="users_to_role_users_id_fkey"
+            ["users_id"],
+            ["users.id"],
+            name="users_to_role_users_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="users_to_role_pkey"),
     )
@@ -114,8 +120,12 @@ def upgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.ForeignKeyConstraint(["lpu_id"], ["lpus.id"], name="lpus_to_mo_lpu_id_fkey"),
-        sa.ForeignKeyConstraint(["mo_id"], ["lpus.id"], name="lpus_to_mo_mo_id_fkey"),
+        sa.ForeignKeyConstraint(
+            ["lpu_id"], ["lpus.id"], name="lpus_to_mo_lpu_id_fkey", ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["mo_id"], ["lpus.id"], name="lpus_to_mo_mo_id_fkey", ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", name="lpus_to_mo_pkey"),
     )
 
@@ -142,7 +152,10 @@ def upgrade() -> None:
         sa.Column("email", sa.VARCHAR(length=255), autoincrement=False, nullable=True),
         sa.Column("region", sa.VARCHAR(length=128), autoincrement=False, nullable=True),
         sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name="users_additional_info_user_id_fkey"
+            ["user_id"],
+            ["users.id"],
+            name="users_additional_info_user_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="users_additional_info_pkey"),
     )
@@ -167,9 +180,13 @@ def upgrade() -> None:
             ["spec_id"],
             ["specialities.spec_code"],
             name="users_to_specialisation_spec_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
-            ["users_id"], ["users.id"], name="users_to_specialisation_users_id_fkey"
+            ["users_id"],
+            ["users.id"],
+            name="users_to_specialisation_users_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="users_to_specialisation_pkey"),
     )
@@ -191,10 +208,13 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.ForeignKeyConstraint(
-            ["lpu_id"], ["lpus.id"], name="users_to_lpu_lpu_id_fkey"
+            ["lpu_id"], ["lpus.id"], name="users_to_lpu_lpu_id_fkey", ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["users_id"], ["users.id"], name="users_to_lpu_users_id_fkey"
+            ["users_id"],
+            ["users.id"],
+            name="users_to_lpu_users_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="users_to_lpu_pkey"),
     )

@@ -5,32 +5,6 @@ from sqlalchemy import event, text
 from .database import db
 
 
-"""
-CREATE OR REPLACE FUNCTION update_time()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.changed_at = NOW(); 
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER update_time_trigger_usc
-BEFORE UPDATE ON user_to_specialisation
-FOR EACH ROW
-EXECUTE FUNCTION update_time();
-
-CREATE TRIGGER update_time_trigger_utr
-BEFORE UPDATE ON users_to_role 
-FOR EACH ROW
-EXECUTE FUNCTION update_time();
-
-CREATE TRIGGER update_time_trigger_utl
-BEFORE UPDATE ON user_to_lpu 
-FOR EACH ROW
-EXECUTE FUNCTION update_time();
-"""
-
-
 class Role(db.Model):
     __tablename__ = "role"
     role_id = db.Column(db.Integer, primary_key=True)
@@ -77,10 +51,10 @@ class UsersRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     users_id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    role_id = db.Column(db.Integer, db.ForeignKey("role.role_id"))
+    role_id = db.Column(db.Integer, db.ForeignKey("role.role_id", ondelete="CASCADE"))
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
@@ -95,10 +69,12 @@ class UsersSpec(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     users_id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    spec_id = db.Column(db.Integer, db.ForeignKey("specialities.spec_code"))
+    spec_id = db.Column(
+        db.Integer, db.ForeignKey("specialities.spec_code", ondelete="CASCADE")
+    )
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
@@ -113,10 +89,10 @@ class UsersLpu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     users_id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    lpu_id = db.Column(db.String(32), db.ForeignKey("lpus.id"))
+    lpu_id = db.Column(db.String(32), db.ForeignKey("lpus.id", ondelete="CASCADE"))
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
@@ -127,12 +103,12 @@ class LpusMo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lpu_id = db.Column(
         db.String(32),
-        db.ForeignKey("lpus.id"),
+        db.ForeignKey("lpus.id", ondelete="CASCADE"),
         nullable=False,
     )
     mo_id = db.Column(
         db.String(32),
-        db.ForeignKey("lpus.id"),
+        db.ForeignKey("lpus.id", ondelete="CASCADE"),
     )
 
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
@@ -148,7 +124,7 @@ class AdditionalInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id"),
+        db.ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     phone = db.Column(db.String(64))
@@ -177,6 +153,7 @@ class User(db.Model):
     first_name = db.Column(db.String(64))
     second_name = db.Column(db.String(64))
     snils = db.Column(db.String(12))
+
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 

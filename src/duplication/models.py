@@ -89,3 +89,6 @@ def get_model_df(df: pd.DataFrame, model: db.Model):
         df["SNILS"] = df["SNILS"].apply(lambda x: "".join(re.findall(r"\d+", x)))
 
     return frame
+
+
+row = filtered_df.iloc[0]

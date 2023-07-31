@@ -9,7 +9,7 @@ data_bp = Blueprint("data", __name__)
 
 @data_bp.get("/test")
 def test_page():
-    return jsonify(message="Hello, DIT!"), ConfigApp.ResponseStatusCode.OK
+    return jsonify(message="Hello, DIT!"), app_config.ResponseStatusCode.OK
 
 
 @data_bp.post("/")
@@ -40,7 +40,7 @@ def delete_user(user_id):
     if user is None:
         return (
             jsonify(message="User not founded!"),
-            ConfigApp.ResponseStatusCode.NOT_FOUND,
+            app_config.ResponseStatusCode.NOT_FOUND,
         )
 
     db.session.delete(user)
@@ -56,7 +56,7 @@ def check_user(user_id):
     if user is None:
         return (
             jsonify(message="User not founded!"),
-            ConfigApp.ResponseStatusCode.NOT_FOUND,
+            app_config.ResponseStatusCode.NOT_FOUND,
         )
 
     user_dict = {
