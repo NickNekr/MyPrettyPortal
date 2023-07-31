@@ -13,7 +13,8 @@ def get_data_from_db():
 
 
 def get_dataframe_from_parquet():
-    return pd.read_parquet(app_config.PARQUET_PATH)
+    df = pd.read_parquet(app_config.PARQUET_PATH)
+    return df.astype("str")
 
 
 def save_to_parquet(dataframe):
