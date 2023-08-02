@@ -3,7 +3,7 @@ from duplication.first_duplic import first_duplication
 from duplication.dataframes import (
     save_to_parquet,
     get_merged_dataframes,
-    add_data,
+    add_new_data,
 )
 
 
@@ -17,5 +17,5 @@ def main_update():
         first_duplication()
         return
     dataframes = get_merged_dataframes()
-    add_data(dataframes["new"])
+    add_new_data(dataframes["new"])
     save_to_parquet(dataframes["all_data"])

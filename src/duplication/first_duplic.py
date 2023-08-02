@@ -2,7 +2,7 @@ from redis_app.red import redis_client
 from duplication.dataframes import (
     get_df,
     save_to_parquet,
-    add_data,
+    add_new_data,
 )
 
 
@@ -21,4 +21,4 @@ def first_duplication():
     df = get_df()
     save_to_parquet(df)
     init_redis_var()
-    add_data(df)
+    add_new_data(df)

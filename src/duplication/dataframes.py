@@ -63,11 +63,13 @@ def get_merged_dataframes():
     login_to_id: dict = redis_client.get("login_to_id")
 
     result = old_df.merge(new_df, how="outer", indicator=True)
-    for_del_df = result[result["_merge"] == "left_only"]
-    right_only = result[result["_merge"] == "right_only"]
-    in_saved_login = right_only["LOGIN"].isin(login_to_id)
-    new_data_df = right_only[~in_saved_login]
-    changed_data_df = right_only[in_saved_login]
+    result.drop(columns="both", inplace=True)
+    left_only_predicate_df = result["_merge"] == "left_only"
+    for_del_df = result[left_only_predicate_df]
+    right_only = result[~left_only_predicate_df]
+    in_saved_login_predicate_df = right_only["LOGIN"].isin(login_to_id)
+    new_data_df = right_only[~in_saved_login_predicate_df]
+    changed_data_df = right_only[in_saved_login_predicate_df]
     return {
         "new": new_data_df,
         "changed": changed_data_df,
@@ -76,7 +78,7 @@ def get_merged_dataframes():
     }
 
 
-def add_data(df: pd.DataFrame):
+def add_new_data(df: pd.DataFrame):
     if df.empty:
         return
 
