@@ -15,7 +15,14 @@ class Config(object):
     PASSWORD = os.environ.get("DB_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
-    PARQUET_PATH = "apps/celery_app/duplication/data.parquet"
+    GOLD_QUERY_PATH = "./Data/gold.sql"
+    SILVER_QUERY_PATH = "./Data/silver.sql"
+
+    with open(GOLD_QUERY_PATH, "r") as f:
+        GOLD_QUERY = f.read()
+
+    with open(SILVER_QUERY_PATH, "r") as f:
+        SILVER_QUERY = f.read()
 
     TABLES_LIST = [
         "role",
@@ -51,7 +58,8 @@ class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
 
-    EXCEL_FILE_PATH = "apps/celery_app/duplication/database.xlsx"
+    EXCEL_PATH = "./Data/database.xlsx"
+    PARQUET_PATH = "./Data/database.parquet"
 
 
 class TestingConfig(Config):
