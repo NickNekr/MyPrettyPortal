@@ -168,3 +168,100 @@ class User(db.Model):
     role = relationship(UsersRole, backref="user", cascade="all, delete-orphan")
     spec = relationship(UsersSpec, backref="user", cascade="all, delete-orphan")
     addit = relationship(AdditionalInfo, backref="user", cascade="all, delete-orphan")
+
+
+# MODELS
+"""
+CREATE TABLE role (
+    role_id SERIAL PRIMARY KEY,
+    role_name VARCHAR(128) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE lpus (
+    id VARCHAR(32) PRIMARY KEY,
+    lpu_name VARCHAR(255),
+    ogrn VARCHAR(16),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE specialities (
+    spec_code INTEGER PRIMARY KEY,
+    spec_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE users_to_role (
+    id SERIAL PRIMARY KEY,
+    users_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_id INTEGER REFERENCES role(role_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE users_to_specialisation (
+    id SERIAL PRIMARY KEY,
+    users_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    spec_id INTEGER REFERENCES specialities(spec_code) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE users_to_lpu (
+    id SERIAL PRIMARY KEY,
+    users_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    lpu_id VARCHAR(32) REFERENCES lpus(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE lpus_to_mo (
+    id SERIAL PRIMARY KEY,
+    lpu_id VARCHAR(32) NOT NULL REFERENCES lpus(id) ON DELETE CASCADE,
+    mo_id VARCHAR(32) REFERENCES lpus(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE users_additional_info (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    phone VARCHAR(64),
+    email VARCHAR(255),
+    region VARCHAR(128),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY NOT NULL,
+    login VARCHAR(128) UNIQUE,
+    last_name VARCHAR(64),
+    first_name VARCHAR(64),
+    second_name VARCHAR(64),
+    snils VARCHAR(12),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    changed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+"""
+
+# Triggers and functions from '../../migration/versions/38a3b26752b9_add_triggers.py'
+"""
+CREATE OR REPLACE FUNCTION update_time()
+RETURNS TRIGGER AS $$
+BEGIN
+NEW.changed_at = NOW(); 
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+"""
+
+"""
+CREATE OR REPLACE TRIGGER update_changed_time_tr_on_{table_name}
+BEFORE UPDATE ON {table_name}
+FOR EACH ROW
+EXECUTE FUNCTION update_time();
+"""
