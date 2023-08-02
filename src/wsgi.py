@@ -1,4 +1,4 @@
-from portal import create_app
+from main_app import create_app
 from config import app_config
 
 app = create_app()

@@ -2,8 +2,8 @@ import logging
 import traceback
 
 from .celery import celery_app
-from redis_app.red import redis_client
-from duplication.update_state import main_update
+from .duplication.update_state import main_update
+from apps.redis_app.red import redis_client
 
 
 # for test

@@ -7,13 +7,13 @@ celery_app = Celery(
     "duplication",
     broker="redis://redis:6379/0",
     include=[
-        "celdery.tasks",
+        "celery_app.tasks",
     ],
 )
 
 celery_app.conf.beat_schedule = {
     "my-scheduled-task": {
-        "task": "celdery.tasks.update_data",
+        "task": "celery_app.tasks.update_data",
         "schedule": crontab(minute="0", hour="9"),
     },
 }

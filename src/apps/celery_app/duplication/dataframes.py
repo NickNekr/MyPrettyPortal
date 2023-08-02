@@ -2,10 +2,15 @@ import json
 import pandas as pd
 
 from config import app_config
-from redis_app.red import redis_client
-from duplication.models import add_model, get_model_df, ModelsCol, add_lpus
-from duplication.users import add_users
-from database.models import User, Lpu
+from apps.redis_app.red import redis_client
+from apps.celery_app.duplication.models import (
+    add_model,
+    get_model_df,
+    ModelsCol,
+    add_lpus,
+)
+from apps.celery_app.duplication.users import add_users
+from apps.database_app import User, Lpu
 
 
 def get_data_from_db():

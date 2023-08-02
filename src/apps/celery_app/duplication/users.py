@@ -2,9 +2,9 @@ import json
 import pandas as pd
 
 from wsgi import app
-from redis_app.red import redis_client
-from database.models import User
-from database.database import db
+from apps.redis_app.red import redis_client
+from apps.database_app import User
+from apps.database_app import db
 
 
 def delete_users(user_frame: pd.DataFrame):

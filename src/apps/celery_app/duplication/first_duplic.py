@@ -1,5 +1,5 @@
-from redis_app.red import redis_client
-from duplication.dataframes import (
+from apps.redis_app.red import redis_client
+from apps.celery_app.duplication.dataframes import (
     get_df,
     save_to_parquet,
     add_new_data,

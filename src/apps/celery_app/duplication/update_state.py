@@ -1,6 +1,6 @@
-from redis_app.red import redis_client
-from duplication.first_duplic import first_duplication
-from duplication.dataframes import (
+from apps.redis_app.red import redis_client
+from apps.celery_app.duplication.first_duplic import first_duplication
+from apps.celery_app.duplication.dataframes import (
     save_to_parquet,
     get_merged_dataframes,
     add_new_data,

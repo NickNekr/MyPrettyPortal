@@ -3,10 +3,10 @@ import os
 
 from flask import Flask
 
-from database.database import db
+from apps.database_app.database import db
 from config import app_config
-from .data_routes import data_bp
-from .celery_routes import celery_bp
+from apps.data_routes.data_routes import data_bp
+from apps.celery_routes.celery import celery_bp
 
 
 def create_app():
@@ -19,7 +19,7 @@ def create_app():
 
         db.init_app(app)
         # db.create_all()
-        # wait for the database to load
+        # wait for the database_app to load
         if "DOCKER_CONTAINER" in os.environ:
             time.sleep(15)
         return app
