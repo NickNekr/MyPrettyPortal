@@ -5,7 +5,7 @@ from wsgi import app
 from duplication.users import add_users
 from redis_app.red import redis_client
 from database.database import db
-from database.models import User, AdditionalInfo, Role, Specialities, Lpu
+from database.models import User, AdditionalInfo, Role, Specialities, Lpu, LpusMo
 
 
 class ModelsCol:
@@ -18,16 +18,23 @@ class ModelsCol:
             "col": ["LOGIN", "REGION_NAME", "PHONE", "EMAIL", "USER_ID"],
             "sub": ["LOGIN", "REGION_NAME"],
         },
-        Role: {"col": ["USER_ROLE_ID", "USER_ROLE"], "sub": ["USER_ROLE_ID"]},
+        Role: {
+            "col": ["USER_ROLE_ID", "USER_ROLE"],
+            "sub": ["USER_ROLE_ID", "USER_ROLE"],
+        },
         Specialities: {
             "col": [
                 "SPEC_CODE",
                 "SPEC_NAME",
             ],
-            "sub": ["SPEC_CODE"],
+            "sub": ["SPEC_CODE", "SPEC_NAME"],
         },
         Lpu: {
             "col": ["LPU_ID", "LPU_NAME", "OGRN", "MO_ID", "MO_NAME"],
+            "sub": ["LPU_ID", "MO_ID"],
+        },
+        LpusMo: {
+            "col": ["LPU_ID", "MO_ID"],
             "sub": ["LPU_ID", "MO_ID"],
         },
     }

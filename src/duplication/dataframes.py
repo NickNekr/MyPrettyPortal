@@ -60,12 +60,11 @@ def get_merged_dataframes():
     old_df = get_dataframe_from_parquet()
     new_df = get_df()
 
-    login_to_id: dict = redis_client.get("login_to_id")
+    login_to_id: dict = json.loads(redis_client.get("login_to_id"))
 
     result = old_df.merge(new_df, how="outer", indicator=True)
     result.drop(columns="both", inplace=True)
     left_only_predicate_df = result["_merge"] == "left_only"
-    for_del_df = result[left_only_predicate_df]
     right_only = result[~left_only_predicate_df]
     in_saved_login_predicate_df = right_only["LOGIN"].isin(login_to_id)
     new_data_df = right_only[~in_saved_login_predicate_df]
@@ -73,7 +72,6 @@ def get_merged_dataframes():
     return {
         "new": new_data_df,
         "changed": changed_data_df,
-        "del": for_del_df,
         "all_data": new_df,
     }
 
