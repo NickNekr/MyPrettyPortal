@@ -25,6 +25,18 @@ def upgrade() -> None:
             "role_name", sa.VARCHAR(length=128), autoincrement=False, nullable=False
         ),
         sa.PrimaryKeyConstraint("role_id", name="role_pkey"),
+        sa.Column(
+            "created_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "changed_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
     )
     op.create_table(
         "users",
@@ -100,6 +112,18 @@ def upgrade() -> None:
             "lpu_name", sa.VARCHAR(length=255), autoincrement=False, nullable=True
         ),
         sa.Column("ogrn", sa.VARCHAR(length=16), autoincrement=False, nullable=True),
+        sa.Column(
+            "created_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "changed_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
         sa.PrimaryKeyConstraint("id", name="lpus_pkey"),
         postgresql_ignore_search_path=False,
     )
@@ -141,6 +165,18 @@ def upgrade() -> None:
         sa.Column(
             "spec_name", sa.VARCHAR(length=255), autoincrement=False, nullable=False
         ),
+        sa.Column(
+            "created_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "changed_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
         sa.PrimaryKeyConstraint("spec_code", name="specialities_pkey"),
         postgresql_ignore_search_path=False,
     )
@@ -158,6 +194,18 @@ def upgrade() -> None:
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name="users_additional_info_pkey"),
+        sa.Column(
+            "created_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
+        sa.Column(
+            "changed_at",
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=True,
+        ),
     )
     op.create_table(
         "users_to_specialisation",

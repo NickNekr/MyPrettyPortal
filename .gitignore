@@ -1,9 +1,9 @@
 venv/
 __pycache__
-data
 .*
 !.gitignore
 *.xlsx
-src/duplication/data.parquet
+Data/data.parquet
 src/celerybeat-schedule
 src/celery_tasks.log
+Data

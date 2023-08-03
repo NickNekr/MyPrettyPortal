@@ -79,6 +79,7 @@ def get_merged_dataframes():
     result = old_df.merge(new_df, how="outer", indicator=True)
     result.drop(columns="both", inplace=True)
     left_only_predicate_df = result["_merge"] == "left_only"
+    left_only = result[left_only_predicate_df]
     right_only = result[~left_only_predicate_df]
     in_saved_login_predicate_df = right_only["LOGIN"].isin(login_to_id)
     new_data_df = right_only[~in_saved_login_predicate_df]
@@ -86,7 +87,8 @@ def get_merged_dataframes():
     return {
         "new": new_data_df,
         "changed": changed_data_df,
-        "all_data": new_df,
+        "all": new_df,
+        "del": left_only,
     }
 
 

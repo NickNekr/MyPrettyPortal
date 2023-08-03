@@ -1,6 +1,10 @@
 import pandas as pd
 
-from duplication.dataframes import get_dataframe_from_parquet
+from apps.celery_app.duplication.dataframes import get_dataframe_from_parquet
+
+# Данные повторяются в:  Index(['REGION_NAME', 'SPEC_NAME', 'SPEC_CODE', 'USER_ROLE', 'USER_ROLE_ID',
+#        'LPU_ID', 'LPU_NAME', 'OGRN', 'MO_ID', 'MO_NAME'],
+#       dtype='object')
 
 
 def unique_test():
