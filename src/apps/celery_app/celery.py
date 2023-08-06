@@ -5,7 +5,7 @@ from config import app_config
 
 celery_app = Celery(
     "duplication",
-    broker="redis://redis:6379/0",
+    broker="redis://localhost:6379/0",
     include=[
         "celery_app.tasks",
     ],

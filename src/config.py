@@ -58,7 +58,7 @@ class DevelopmentConfig(Config):
     ENV = "development"
     DEBUG = True
 
-    EXCEL_PATH = "./Data/database.xlsx"
+    EXCEL_FILE_PATH = "./Data/database.xlsx"
     PARQUET_PATH = "./Data/database.parquet"
 
 

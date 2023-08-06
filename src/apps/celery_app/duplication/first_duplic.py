@@ -1,24 +1,14 @@
-from apps.redis_app.red import redis_client
-from apps.celery_app.duplication.dataframes import (
-    get_df,
-    save_to_parquet,
-    add_new_data,
-)
+import pandas as pd
 
+# Создаем два DataFrame для примера
+data1 = {"id": [1], "region": ["Orel"]}
 
-# Index(['LOGIN_ID', 'LOGIN', 'LAST_NAME', 'FIRST_NAME', 'SECOND_NAME', 'SNILS', 'REGION_NAME',
-#        'PHONE', 'EMAIL', 'SPEC_NAME', 'SPEC_CODE', 'USER_ROLE', 'USER_ROLE_ID',
-#        'LPU_ID', 'LPU_NAME', 'OGRN', 'MO_ID', 'MO_NAME'],
-#       dtype='object')
+data2 = {"id": [1], "region": ["Meow"]}
 
+df1 = pd.DataFrame(data1)
+df2 = pd.DataFrame(data2)
 
-def init_redis_var():
-    redis_client.set("data_in_parquet", "true")
-    redis_client.set("login_to_id", "{}")
+# Слияние по колонке 'id'
+merged_df = df1.merge(df2, on=["id"], how="outer", indicator=True)
 
-
-def first_duplication():
-    df = get_df()
-    save_to_parquet(df)
-    init_redis_var()
-    add_new_data(df)
+print(merged_df)

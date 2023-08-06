@@ -2,7 +2,7 @@ import logging
 import traceback
 
 from .celery import celery_app
-from .duplication.update_state import main_update
+from .duplication.update_state import update_database
 from apps.redis_app.red import redis_client
 
 
@@ -25,7 +25,7 @@ def update_data():
     lock = redis_client.setnx("update_task_lock", "locked")
     if lock:
         try:
-            main_update()
+            update_database()
         except Exception:
             logging.error(traceback.format_exc())
         finally:

@@ -97,6 +97,10 @@ class UsersLpu(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
     changed_at = db.Column(db.DateTime(timezone=True), default=datetime.now())
 
+    def __init__(self, data: dict):
+        self.users_id = data["USER_ID"]
+        self.lpu_id = data["LPU_ID"]
+
 
 class LpusMo(db.Model):
     __tablename__ = "lpus_to_mo"
