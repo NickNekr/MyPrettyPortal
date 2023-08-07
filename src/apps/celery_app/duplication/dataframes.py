@@ -122,10 +122,10 @@ def add_user_id_to_dataframes(frames: dict[db.Model, dict[str, pd.DataFrame]]) -
             frames[model]["new"]["USER_ID"] = frames[model]["new"].apply(
                 lambda row: login_to_id[row["LOGIN"]], axis=1
             )
-        if not frames[model]["del"].empty:
-            frames[model]["del"]["USER_ID"] = frames[model]["del"].apply(
-                lambda row: login_to_id[row["LOGIN"]], axis=1
-            )
+        # if not frames[model]["del"].empty:
+        #     frames[model]["del"]["USER_ID"] = frames[model]["del"].apply(
+        #         lambda row: login_to_id[row["LOGIN"]], axis=1
+        #     )
 
 
 def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:

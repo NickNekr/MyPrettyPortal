@@ -178,8 +178,29 @@ def del_model(frame: pd.DataFrame, model: db.Model) -> None:
             axis=1,
         )
         db.session.commit()
-    # TODO
-    # if model == User:
+    if model == User:
+        delete_users_id_from_redis(frame)
+    if model == Lpu:
+        delete_lpus_id_from_redis(frame)
+
+
+def delete_users_id_from_redis(frame: pd.DataFrame) -> None:
+    """
+    Remove logins from the redis "login_to_id" variable that have been removed from the database.
+    :param frame: user's frame
+    """
+    login_to_id: dict = json.loads(redis_client.get("login_to_id"))
+    frame.apply(lambda row: login_to_id.pop(row["LOGIN"]))
+    json_lti = json.dumps(login_to_id)
+    redis_client.set("login_to_id", json_lti)
+
+
+def delete_lpus_id_from_redis(frame: pd.DataFrame) -> None:
+    """
+    Remove lpu's id from the redis "lpus_id" variable that have been removed from the database.
+    :param frame: lpus's frame
+    """
+    redis_client.srem("lpus_id", *frame["LPU_ID"])
 
 
 def update_model(frame: pd.DataFrame, model: db.Model) -> None:
