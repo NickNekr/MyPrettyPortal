@@ -22,6 +22,7 @@ redis = "^4.6.0"
 celery = "^5.3.1"
 flower = "^2.0.0"
 openpyxl = "^3.1.2"
+cx-oracle = "^8.3.0"
 
 [build-system]
 requires = ["poetry-core"]

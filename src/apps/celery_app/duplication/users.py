@@ -3,8 +3,8 @@ import pandas as pd
 
 from wsgi import app
 from apps.redis_app.red import redis_client
-from apps.database_app.models import User
-from apps.database_app.database import db
+from apps.orm_db_app.models import User
+from apps.orm_db_app.database import db
 
 
 def delete_users(user_frame: pd.DataFrame):

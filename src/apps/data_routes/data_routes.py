@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 
 from config import app_config
-from apps.database_app.database import db
-from apps.database_app.models import User, LpusMo
+from apps.orm_db_app.database import db
+from apps.orm_db_app.models import User, LpusMo
 
 data_bp = Blueprint("data", __name__)
 

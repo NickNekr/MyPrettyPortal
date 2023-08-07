@@ -10,8 +10,8 @@ from apps.celery_app.duplication.models import (
     add_lpus,
 )
 from apps.celery_app.duplication.users import add_users
-from apps.database_app.models import User, Lpu
-from apps.database_app.database import db
+from apps.orm_db_app.models import User, Lpu
+from apps.oracle_db_app.oracle_db import oracle_db
 
 
 def get_data_from_db() -> pd.DataFrame:
@@ -19,7 +19,7 @@ def get_data_from_db() -> pd.DataFrame:
     Executes a gold query, fetches the data, and converts it to a DataFrame.
     :return: extracted data
     """
-    with db.conn.cursor() as cursor:
+    with oracle_db.conn.cursor() as cursor:
         cursor.execute(app_config.GOLD_QUERY)
         column_names = [columns_desc[0] for columns_desc in cursor.description]
         data = cursor.fetchall()
