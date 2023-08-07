@@ -82,6 +82,7 @@ class DeleteModels:
         Specialities: {"field": Specialities.spec_code, "col": "SPEC_CODE"},
         Role: {"field": Role.role_id, "col": "USER_ROLE_ID"},
         Lpu: {"field": Lpu.id, "col": "LPU_ID"},
+        # TODO
         # UsersSpec: {"field": UsersSpec.users_id}
     }
 

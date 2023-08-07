@@ -163,10 +163,12 @@ def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
 
 def get_del_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     """
-
-    :param by_model:
-    :param model:
-    :return:
+    Retrieves data that needs to be deleted from the database.
+    Data needs to be only in left dataframe (_merge == "left_only").
+    Also set not 'on' columns left dataframes values.
+    :param by_model: merged dataframe on columns depending on model
+    :param model: model of database
+    :return: extracted data
     """
     del_data = by_model[by_model["_merge"] == "left_only"].copy()
     for i in range(len(MergeDataColumns.MODELS[model]["not_unique_cols"])):
@@ -179,7 +181,15 @@ def get_del_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     return del_data
 
 
-def get_new_data(by_model, model):
+def get_new_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
+    """
+    Retrieves data that needs to be added in the database.
+    Data needs to be only in right dataframe (_merge == "right_only").
+    Also set not 'on' columns right dataframes values.
+    :param by_model: merged dataframe on columns depending on model
+    :param model: model of database
+    :return: extracted data
+    """
     new_data = by_model[by_model["_merge"] == "right_only"].copy()
     for i in range(len(MergeDataColumns.MODELS[model]["not_unique_cols"])):
         new_data[MergeDataColumns.MODELS[model]["not_unique_cols"][i]] = new_data[
@@ -190,7 +200,17 @@ def get_new_data(by_model, model):
     return new_data
 
 
-def get_merged_dataframes(data_in_parquet=True):
+def retrieves_data(
+    data_in_parquet=True,
+) -> tuple[dict[db.Model, dict[str, pd.DataFrame]], pd.DataFrame]:
+    """
+    Fetches data from parquet and database/excel, merges it by each model and retrieves data that needs to be added/deleted/updated in the database.
+    If 'data_in_parquet' set to
+        - False: than old dataframe init like empty
+        - True: than data fetches from parquet
+    :param data_in_parquet: boolean values
+    :return: retrieves data and new dataframe
+    """
     new_df = get_df()
     old_df = (
         get_dataframe_from_parquet()
@@ -222,26 +242,41 @@ def get_merged_dataframes(data_in_parquet=True):
         if model in UpdateModels.MODELS:
             updated_data = get_update_data(by_model, model)
 
-        deleted_data = get_del_data(by_model, model)
+        deleted_data = pd.DataFrame(columns=new_df.columns)
+        if model in DeleteModels.MODELS:
+            deleted_data = get_del_data(by_model, model)
 
         all_data[model] = {"new": new_data, "update": updated_data, "del": deleted_data}
 
     return all_data, new_df
 
 
-def add_new_data(df):
-    add_users(df[User]["new"])
+def add_new_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+    """
+    Adds data to the database.
+    Some models depend on "LOGIN_ID" and "LPU_ID", so we need to add "User" and "LPU" first.
+    :param frames: fetched data to add
+    """
+    add_users(frames[User]["new"])
 
-    add_user_id_to_dataframes(df)
+    add_user_id_to_dataframes(frames)
 
-    add_lpus(df[Lpu]["new"])
+    add_lpus(frames[Lpu]["new"])
 
-    add_frames_to_db(df)
-
-
-def delete_data(df):
-    del_frames_from_db(df)
+    add_frames_to_db(frames)
 
 
-def update_data(df):
-    update_frames_from_db(df)
+def delete_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+    """
+    Deletes data from the database.
+    :param frames: fetched data to delete
+    """
+    del_frames_from_db(frames)
+
+
+def update_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+    """
+    Updates data in the database.
+    :param frames: fetched data to update
+    """
+    update_frames_from_db(frames)
