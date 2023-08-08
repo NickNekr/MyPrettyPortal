@@ -1,5 +1,6 @@
-import pandas as pd
 import json
+from functools import reduce
+import pandas as pd
 
 from wsgi import app
 from apps.redis_app.red import redis_client
@@ -29,11 +30,6 @@ class MergeDataColumns:
             "on": ["USER_ROLE_ID"],
             "not_unique_cols": ["USER_ROLE"],
         },
-        AdditionalInfo: {
-            "columns": ["LOGIN", "PHONE", "EMAIL", "REGION_NAME"],
-            "on": ["LOGIN", "REGION_NAME"],
-            "not_unique_cols": ["PHONE", "EMAIL"],
-        },
         Lpu: {
             "columns": ["LPU_ID", "LPU_NAME", "OGRN", "MO_ID", "MO_NAME"],
             "on": ["LPU_ID", "MO_ID"],
@@ -44,14 +40,19 @@ class MergeDataColumns:
             "on": ["LOGIN"],
             "not_unique_cols": ["LAST_NAME", "FIRST_NAME", "SECOND_NAME", "SNILS"],
         },
+        AdditionalInfo: {
+            "columns": ["LOGIN", "PHONE", "EMAIL", "REGION_NAME"],
+            "on": ["LOGIN", "PHONE", "EMAIL", "REGION_NAME"],
+            "not_unique_cols": [],
+        },
         UsersSpec: {
-            "columns": ["SPEC_CODE", "LOGIN"],
+            "columns": ["LOGIN", "SPEC_CODE"],
             "on": ["LOGIN", "SPEC_CODE"],
             "not_unique_cols": [],
         },
         UsersRole: {
             "columns": ["USER_ROLE_ID", "LOGIN"],
-            "on": ["LOGIN", "USER_ROLE_ID"],
+            "on": ["USER_ROLE_ID", "LOGIN"],
             "not_unique_cols": [],
         },
         LpusMo: {
@@ -60,7 +61,7 @@ class MergeDataColumns:
             "not_unique_cols": [],
         },
         UsersLpu: {
-            "columns": ["LPU_ID", "LOGIN"],
+            "columns": ["LOGIN", "LPU_ID"],
             "on": ["LOGIN", "LPU_ID"],
             "not_unique_cols": [],
         },
@@ -78,12 +79,23 @@ class UpdateModels:
 
 class DeleteModels:
     MODELS = {
-        User: {"field": User.login, "col": "LOGIN"},
-        Specialities: {"field": Specialities.spec_code, "col": "SPEC_CODE"},
-        Role: {"field": Role.role_id, "col": "USER_ROLE_ID"},
-        Lpu: {"field": Lpu.id, "col": "LPU_ID"},
-        # TODO
-        # UsersSpec: {"field": UsersSpec.users_id}
+        User: [(User.login, "LOGIN")],
+        Specialities: [(Specialities.spec_code, "SPEC_CODE")],
+        Role: [(Role.role_id, "USER_ROLE_ID")],
+        Lpu: [(Lpu.id, "LPU_ID")],
+        UsersSpec: [(UsersSpec.users_id, "USER_ID"), (UsersSpec.spec_id, "SPEC_CODE")],
+        UsersRole: [
+            (UsersRole.users_id, "USER_ID"),
+            (UsersRole.role_id, "USER_ROLE_ID"),
+        ],
+        UsersLpu: [(UsersLpu.users_id, "USER_ID"), (UsersLpu.lpu_id, "LPU_ID")],
+        LpusMo: [(LpusMo.lpu_id, "LPU_ID"), (LpusMo.mo_id, "MO_ID")],
+        AdditionalInfo: [
+            (AdditionalInfo.user_id, "USER_ID"),
+            (AdditionalInfo.email, "EMAIL"),
+            (AdditionalInfo.phone, "PHONE"),
+            (AdditionalInfo.region, "REGION_NAME"),
+        ],
     }
 
 
@@ -169,11 +181,17 @@ def del_model(frame: pd.DataFrame, model: db.Model) -> None:
     :param frame: model's dataframe
     :param model: model of database
     """
+    if frame.empty:
+        return
+    if model == AdditionalInfo:
+        print(frame)
     with app.app_context():
         frame.apply(
-            lambda x: model.query.filter(
-                DeleteModels.MODELS[model]["field"]
-                == x[DeleteModels.MODELS[model]["col"]]
+            lambda row: model.query.filter(
+                reduce(
+                    lambda acc, item: acc & item,
+                    [pair[0] == row[pair[1]] for pair in DeleteModels.MODELS[model]],
+                )
             ).delete(),
             axis=1,
         )
@@ -189,8 +207,10 @@ def delete_users_id_from_redis(frame: pd.DataFrame) -> None:
     Remove logins from the redis "login_to_id" variable that have been removed from the database.
     :param frame: user's frame
     """
+    if frame.empty:
+        return
     login_to_id: dict = json.loads(redis_client.get("login_to_id"))
-    frame.apply(lambda row: login_to_id.pop(row["LOGIN"]))
+    frame.apply(lambda row: login_to_id.pop(row["LOGIN"]), axis=1)
     json_lti = json.dumps(login_to_id)
     redis_client.set("login_to_id", json_lti)
 
@@ -200,6 +220,8 @@ def delete_lpus_id_from_redis(frame: pd.DataFrame) -> None:
     Remove lpu's id from the redis "lpus_id" variable that have been removed from the database.
     :param frame: lpus's frame
     """
+    if frame.empty:
+        return
     redis_client.srem("lpus_id", *frame["LPU_ID"])
 
 

@@ -1,4 +1,5 @@
 import json
+from functools import reduce
 import pandas as pd
 
 from config import app_config
@@ -122,10 +123,10 @@ def add_user_id_to_dataframes(frames: dict[db.Model, dict[str, pd.DataFrame]]) -
             frames[model]["new"]["USER_ID"] = frames[model]["new"].apply(
                 lambda row: login_to_id[row["LOGIN"]], axis=1
             )
-        # if not frames[model]["del"].empty:
-        #     frames[model]["del"]["USER_ID"] = frames[model]["del"].apply(
-        #         lambda row: login_to_id[row["LOGIN"]], axis=1
-        #     )
+        if not frames[model]["del"].empty:
+            frames[model]["del"]["USER_ID"] = frames[model]["del"].apply(
+                lambda row: login_to_id[row["LOGIN"]], axis=1
+            )
 
 
 def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
@@ -137,20 +138,18 @@ def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     :param model: model of database
     :return: extracted data
     """
-    main_condition = (by_model["_merge"] == "both") & (
-        len(MergeDataColumns.MODELS[model]["not_unique_cols"]) != 0
-    )
-
-    condition = False
+    if len(MergeDataColumns.MODELS[model]["not_unique_cols"]) == 0:
+        return pd.DataFrame(columns=by_model.columns)
+    main_condition = by_model["_merge"] == "both"
+    conditions = []
     for i in range(len(MergeDataColumns.MODELS[model]["not_unique_cols"])):
-        cond = (
+        conditions.append(
             by_model[MergeDataColumns.MODELS[model]["not_unique_cols"][i] + "_x"]
             != by_model[MergeDataColumns.MODELS[model]["not_unique_cols"][i] + "_y"]
         )
-        condition |= cond
 
-    main_condition &= condition
-    updated_data = by_model[main_condition].copy()
+    condition = reduce(lambda acc, item: acc | item, conditions) & main_condition
+    updated_data = by_model[condition].copy()
     for i in range(len(MergeDataColumns.MODELS[model]["not_unique_cols"])):
         updated_data[
             MergeDataColumns.MODELS[model]["not_unique_cols"][i]
@@ -221,30 +220,24 @@ def retrieves_data(
     all_data = {}
 
     for model in MergeDataColumns.MODELS:
-        by_model = old_df[MergeDataColumns.MODELS[model]["columns"]].merge(
-            new_df[MergeDataColumns.MODELS[model]["columns"]],
-            on=MergeDataColumns.MODELS[model]["on"],
-            how="outer",
-            indicator=True,
+        by_model = (
+            old_df[MergeDataColumns.MODELS[model]["columns"]]
+            .drop_duplicates(subset=MergeDataColumns.MODELS[model]["columns"])
+            .merge(
+                new_df[MergeDataColumns.MODELS[model]["columns"]].drop_duplicates(
+                    subset=MergeDataColumns.MODELS[model]["columns"]
+                ),
+                on=MergeDataColumns.MODELS[model]["on"],
+                how="outer",
+                indicator=True,
+            )
         )
 
         new_data = get_new_data(by_model, model)
 
-        if old_df.empty:
-            all_data[model] = {
-                "new": new_data,
-                "update": pd.DataFrame(),
-                "del": pd.DataFrame(),
-            }
-            continue
+        updated_data = get_update_data(by_model, model)
 
-        updated_data = pd.DataFrame(columns=new_df.columns)
-        if model in UpdateModels.MODELS:
-            updated_data = get_update_data(by_model, model)
-
-        deleted_data = pd.DataFrame(columns=new_df.columns)
-        if model in DeleteModels.MODELS:
-            deleted_data = get_del_data(by_model, model)
+        deleted_data = get_del_data(by_model, model)
 
         all_data[model] = {"new": new_data, "update": updated_data, "del": deleted_data}
 
