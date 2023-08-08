@@ -183,8 +183,6 @@ def del_model(frame: pd.DataFrame, model: db.Model) -> None:
     """
     if frame.empty:
         return
-    if model == AdditionalInfo:
-        print(frame)
     with app.app_context():
         frame.apply(
             lambda row: model.query.filter(
