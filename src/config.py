@@ -15,8 +15,8 @@ class Config(object):
     PASSWORD = os.environ.get("DB_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
-    GOLD_QUERY_PATH = "./Data/gold.sql"
-    SILVER_QUERY_PATH = "./Data/silver.sql"
+    GOLD_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/gold.sql"
+    SILVER_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/silver.sql"
 
     with open(GOLD_QUERY_PATH, "r") as f:
         GOLD_QUERY = f.read()
