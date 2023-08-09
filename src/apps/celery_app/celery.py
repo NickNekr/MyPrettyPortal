@@ -5,15 +5,15 @@ from config import app_config
 
 celery_app = Celery(
     "duplication",
-    broker="redis://localhost:6379/0",
+    broker="redis://redis:6379/0",
     include=[
-        "celery_app.tasks",
+        "apps.celery_app.tasks",
     ],
 )
 
 celery_app.conf.beat_schedule = {
     "my-scheduled-task": {
-        "task": "celery_app.tasks.update_data",
+        "task": "apps.celery_app.tasks.update_data",
         "schedule": crontab(minute="0", hour="9"),
     },
 }

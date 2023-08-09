@@ -25,13 +25,14 @@ services:
     build: .
     volumes:
       - ./src:/web/src
+      - ./Data:/web/Data
     environment:
       - TZ=${DB_TIMEZONE}
     command:
       - sh
       - -c
       - |
-        cd src && poetry run celery --app=celdery.celery beat --loglevel=INFO
+        cd src && poetry run celery --app=apps.celery_app.celery beat --loglevel=INFO
     depends_on:
       - redis
       - web
@@ -40,13 +41,14 @@ services:
     build: .
     volumes:
       - ./src:/web/src
+      - ./Data:/web/Data
     environment:
       - TZ=${DB_TIMEZONE}
     command:
       - sh
       - -c
       - |
-        cd src && poetry run celery --app=celdery.celery worker --loglevel=INFO
+        cd src && poetry run celery --app=apps.celery_app.celery worker --loglevel=INFO
     depends_on:
       - redis
       - web
@@ -62,6 +64,7 @@ services:
     volumes:
       - ./src:/web/src
       - ./migration:/web/migration
+      - ./Data:/web/Data
     environment:
       - DOCKER_CONTAINER=true
       - TZ=${DB_TIMEZONE}

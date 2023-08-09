@@ -1,8 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import relationship
-from sqlalchemy import event, text
 
-from .database import db
+from apps.orm_db_app.database import db
 
 
 class Role(db.Model):
