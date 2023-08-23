@@ -1,7 +1,7 @@
 FROM python:3.9-slim-bullseye
 
-#ENV http_proxy http://10.0.20.6:80
-#ENV https_proxy http://10.0.20.6:80
+ENV http_proxy http://10.0.20.6:80
+ENV https_proxy http://10.0.20.6:80
 
 WORKDIR /web
 
