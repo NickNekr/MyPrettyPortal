@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import relationship
 
-from apps.orm_db_app.database import db
+from apps.services.orm_db_services.database import db
 
 
 class Role(db.Model):

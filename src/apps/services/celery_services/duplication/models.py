@@ -3,9 +3,9 @@ from functools import reduce
 import pandas as pd
 
 from wsgi import app
-from apps.redis_app.red import redis_client
-from apps.orm_db_app.database import db
-from apps.orm_db_app.models import (
+from apps.services.redis_services.red import redis_client
+from apps.services.orm_db_services.database import db
+from apps.services.orm_db_services.models import (
     User,
     AdditionalInfo,
     Role,
@@ -108,7 +108,7 @@ def add_lpus(frame: pd.DataFrame) -> None:
         return
 
     lpus = []
-    added_lpus = redis_client.smembers("lpus_ids")
+    added_lpus = redis_client.conn.smembers("lpus_ids")
     frame.apply(
         lambda x: (lpus.append(Lpu(x)), added_lpus.add(x["LPU_ID"]))
         if x["LPU_ID"] not in added_lpus
@@ -128,7 +128,7 @@ def add_lpus(frame: pd.DataFrame) -> None:
         db.session.add_all(lpus)
         db.session.commit()
 
-    redis_client.sadd("lpus_ids", *added_lpus)
+    redis_client.conn.sadd("lpus_ids", *added_lpus)
 
 
 def add_users(frame: pd.DataFrame) -> None:
@@ -140,7 +140,7 @@ def add_users(frame: pd.DataFrame) -> None:
         return
 
     users = []
-    json_lti = json.loads(redis_client.get("login_to_id"))
+    json_lti = json.loads(redis_client.conn.get("login_to_id"))
 
     frame.apply(
         lambda x: users.append(User(x)) if x["LOGIN"] not in json_lti else None, axis=1
@@ -154,7 +154,7 @@ def add_users(frame: pd.DataFrame) -> None:
             json_lti[user.login] = user.id
     json_lti = json.dumps(json_lti)
 
-    redis_client.set("login_to_id", json_lti)
+    redis_client.conn.set("login_to_id", json_lti)
 
 
 def add_model(frame: pd.DataFrame, model: db.Model) -> None:
@@ -207,10 +207,10 @@ def delete_users_id_from_redis(frame: pd.DataFrame) -> None:
     """
     if frame.empty:
         return
-    login_to_id: dict = json.loads(redis_client.get("login_to_id"))
+    login_to_id: dict = json.loads(redis_client.conn.get("login_to_id"))
     frame.apply(lambda row: login_to_id.pop(row["LOGIN"]), axis=1)
     json_lti = json.dumps(login_to_id)
-    redis_client.set("login_to_id", json_lti)
+    redis_client.conn.set("login_to_id", json_lti)
 
 
 def delete_lpus_id_from_redis(frame: pd.DataFrame) -> None:
@@ -220,7 +220,7 @@ def delete_lpus_id_from_redis(frame: pd.DataFrame) -> None:
     """
     if frame.empty:
         return
-    redis_client.srem("lpus_id", *frame["LPU_ID"])
+    redis_client.conn.srem("lpus_id", *frame["LPU_ID"])
 
 
 def update_model(frame: pd.DataFrame, model: db.Model) -> None:

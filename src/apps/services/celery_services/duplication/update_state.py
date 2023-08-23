@@ -1,5 +1,5 @@
-from apps.redis_app.red import redis_client
-from apps.celery_app.duplication.dataframes import (
+from apps.services.redis_services.red import redis_client
+from apps.services.celery_services.duplication.dataframes import (
     save_to_parquet,
     retrieves_data,
     add_new_data,
@@ -13,8 +13,8 @@ def init_redis_var() -> bool:
     Sets redis variables in the first update.
     :return always False to explain, that data_in_parquet doesn't set to True
     """
-    redis_client.set("login_to_id", "{}")
-    redis_client.delete("lpus_ids")
+    redis_client.conn.set("login_to_id", "{}")
+    redis_client.conn.delete("lpus_ids")
     return False
 
 
@@ -37,7 +37,7 @@ def update_database() -> None:
 
     6. Saves the new dataframe 'new_df' to Parquet format using the 'save_to_parquet()'.
     """
-    first_dup = True if redis_client.get("data_in_parquet") else init_redis_var()
+    first_dup = True if redis_client.conn.get("data_in_parquet") else init_redis_var()
     dict_dataframes, new_df = retrieves_data(first_dup)
     add_new_data(dict_dataframes)
     delete_data(dict_dataframes)

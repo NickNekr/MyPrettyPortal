@@ -12,4 +12,4 @@ class DataBase(object):
         self.conn.dispose()
 
 
-oracle_db = DataBase() if app_config.ENV == "production" else None
+oracle_client = DataBase() if app_config.ENV == "production" else None

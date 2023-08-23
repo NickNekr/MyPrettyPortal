@@ -10,7 +10,7 @@ from alembic import context
 config = context.config
 
 from src.config import app_config
-from src.apps.orm_db_app.database import db
+from src.apps.services.orm_db_services.database import db
 
 config.set_main_option("sqlalchemy.url", app_config.SQLALCHEMY_DATABASE_URI)
 

@@ -3,8 +3,8 @@ from functools import reduce
 import pandas as pd
 
 from config import app_config
-from apps.redis_app.red import redis_client
-from apps.celery_app.duplication.models import (
+from apps.services.redis_services.red import redis_client
+from apps.services.celery_services.duplication.models import (
     add_model,
     del_model,
     add_lpus,
@@ -14,7 +14,7 @@ from apps.celery_app.duplication.models import (
     DeleteModels,
     add_users,
 )
-from apps.orm_db_app.models import (
+from apps.services.orm_db_services.models import (
     Lpu,
     AdditionalInfo,
     UsersSpec,
@@ -22,8 +22,8 @@ from apps.orm_db_app.models import (
     User,
     UsersLpu,
 )
-from apps.oracle_db_app.oracle_db import oracle_db
-from apps.orm_db_app.database import db
+from apps.services.oracle_db_services.oracle_db import oracle_client
+from apps.services.orm_db_services.database import db
 
 # Index(['LOGIN_ID', 'LOGIN', 'LAST_NAME', 'FIRST_NAME', 'SECOND_NAME', 'SNILS', 'REGION_NAME',
 #        'PHONE', 'EMAIL', 'SPEC_NAME', 'SPEC_CODE', 'USER_ROLE', 'USER_ROLE_ID',
@@ -34,13 +34,11 @@ from apps.orm_db_app.database import db
 def get_data_from_db() -> pd.DataFrame:
     """
     Executes a gold query, fetches the data, and converts it to a DataFrame.
-    :return: extracted data
+    :return: extracted data as a DataFrame
     """
-    with oracle_db.conn.cursor() as cursor:
-        cursor.execute(app_config.GOLD_QUERY)
-        column_names = [columns_desc[0] for columns_desc in cursor.description]
-        data = cursor.fetchall()
-    return pd.DataFrame(data, columns=column_names)
+    df = pd.read_sql(app_config.DataBase.GOLD_QUERY, con=oracle_client.conn)
+    df.columns = df.columns.str.upper()
+    return df
 
 
 def get_dataframe_from_parquet() -> pd.DataFrame:
@@ -58,7 +56,7 @@ def save_to_parquet(dataframe: pd.DataFrame) -> None:
     :param dataframe: extracted data
     """
     dataframe.to_parquet(app_config.PARQUET_PATH, compression="gzip")
-    redis_client.set("data_in_parquet", "true")
+    redis_client.conn.set("data_in_parquet", "true")
 
 
 def get_dataframe_from_file() -> pd.DataFrame:
@@ -117,7 +115,7 @@ def add_user_id_to_dataframes(frames: dict[db.Model, dict[str, pd.DataFrame]]) -
     Adds column 'USER_ID' to 'new' and 'del' dataframes with column 'LOGIN'.
     :param frames: dict of model and dataframes.
     """
-    login_to_id = json.loads(redis_client.get("login_to_id"))
+    login_to_id = json.loads(redis_client.conn.get("login_to_id"))
     for model in [AdditionalInfo, UsersSpec, UsersRole, UsersLpu, User]:
         if not frames[model]["new"].empty:
             frames[model]["new"]["USER_ID"] = frames[model]["new"].apply(

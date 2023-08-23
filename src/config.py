@@ -1,4 +1,5 @@
 import os
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -15,8 +16,8 @@ class Config(object):
     PASSWORD = os.environ.get("DB_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
-    GOLD_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/gold.sql"
-    SILVER_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/silver.sql"
+    GOLD_QUERY_PATH = "/web/src/apps/oracle_db_services/Queries/gold.sql"
+    SILVER_QUERY_PATH = "/web/src/apps/oracle_db_services/Queries/silver.sql"
 
     TABLES_LIST = [
         "role",
@@ -41,6 +42,24 @@ class Config(object):
         OK = 200
         NOT_FOUND = 404
         BAD_REQUEST = 400
+
+    class CeleryConfig(object):
+        broker_url = "redis://redis:6379/0"
+
+        imports = ("apps.services.celery_services.tasks",)
+
+        broker_connection_retry_on_startup = True
+
+        timezone = "Europe/Moscow"
+
+        beat_schedule = {
+            "my-scheduled-task": {
+                "task": "apps.services.celery_services.tasks.update_data",
+                "schedule": crontab(minute="0", hour="9"),
+            },
+        }
+
+        beat_schedule_timezone = "Europe/Moscow"
 
 
 class ProductionConfig(Config):

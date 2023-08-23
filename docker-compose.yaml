@@ -32,7 +32,7 @@ services:
       - sh
       - -c
       - |
-        cd src && poetry run celery --app=apps.celery_app.celery beat --loglevel=INFO
+        cd src && poetry run celery --app=apps.services.celery_services.celery beat --loglevel=INFO
     depends_on:
       - redis
       - web
@@ -48,7 +48,7 @@ services:
       - sh
       - -c
       - |
-        cd src && poetry run celery --app=apps.celery_app.celery worker --loglevel=INFO
+        cd src && poetry run celery --app=apps.services.celery_services.celery worker --loglevel=INFO
     depends_on:
       - redis
       - web

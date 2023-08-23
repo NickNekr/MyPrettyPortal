@@ -12,7 +12,7 @@ def test_page():
 
 @celery_bp.get("/update")
 def update():
-    from apps.celery_app.tasks import update_data
+    from apps.services.celery_services.tasks import update_data
 
     update_data.delay()
     return jsonify(message="Updating..."), app_config.ResponseStatusCode.OK
