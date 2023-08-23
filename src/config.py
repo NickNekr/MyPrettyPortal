@@ -18,12 +18,6 @@ class Config(object):
     GOLD_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/gold.sql"
     SILVER_QUERY_PATH = "/web/src/apps/oracle_db_app/Queries/silver.sql"
 
-    with open(GOLD_QUERY_PATH, "r") as f:
-        GOLD_QUERY = f.read()
-
-    with open(SILVER_QUERY_PATH, "r") as f:
-        SILVER_QUERY = f.read()
-
     TABLES_LIST = [
         "role",
         "lpus",
@@ -37,7 +31,7 @@ class Config(object):
     ]
 
     class FlaskApp(object):
-        PORT = 5000
+        PORT = 5089
         HOST = "0.0.0.0"
         DEBUG = True
 
@@ -50,6 +44,13 @@ class Config(object):
 
 
 class ProductionConfig(Config):
+    def __init__(self):
+        with open(self.GOLD_QUERY_PATH, "r") as f:
+            self.GOLD_QUERY = f.read()
+
+        with open(self.SILVER_QUERY_PATH, "r") as f:
+            self.SILVER_QUERY = f.read()
+
     ENV = "production"
     DEBUG = False
 
