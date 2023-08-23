@@ -18,7 +18,7 @@ def create_app() -> Flask:
 
     with app.app_context():
         app.register_blueprint(data_bp, url_prefix="/data")
-        app.register_blueprint(celery_bp, url_prefix="/celery")
+        app.register_blueprint(celery_bp, url_prefix="/edu-api/api3/celery")
         app.config.from_object(app_config)
 
         db.init_app(app)

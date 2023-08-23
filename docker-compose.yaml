@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   db:
-    image: postgres:latest
+    image: postgres:15.4-bullseye
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -14,7 +14,7 @@ services:
 #      - ./data:/var/lib/postgresql/data
 
   redis:
-    image: redis:latest
+    image: redis:7.2.0-alpine
     environment:
       - TZ=${DB_TIMEZONE}
     restart: always
