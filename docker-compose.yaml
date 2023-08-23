@@ -22,7 +22,7 @@ services:
       - 6380:6380
 
   beat:
-    build: .
+    build: ./Dockerfiles/Worker.Dockerfile
     volumes:
       - ./src:/web/src
       - ./Data:/web/Data
@@ -38,7 +38,7 @@ services:
       - web
 
   worker:
-    build: .
+    build: ./Dockerfiles/Worker.Dockerfile
     volumes:
       - ./src:/web/src
       - ./Data:/web/Data
@@ -54,7 +54,7 @@ services:
       - web
 
   web:
-    build: .
+    build: ./Dockerfiles/Dockerfile
     restart: always
     ports:
       - 5089:5089
