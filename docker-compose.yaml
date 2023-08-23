@@ -19,10 +19,12 @@ services:
       - TZ=${DB_TIMEZONE}
     restart: always
     ports:
-      - 6380:6380
+      - "6380:6380"
 
   beat:
-    build: ./Dockerfiles/Worker.Dockerfile
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Worker.Dockerfile
     volumes:
       - ./src:/web/src
       - ./Data:/web/Data
@@ -38,7 +40,9 @@ services:
       - web
 
   worker:
-    build: ./Dockerfiles/Worker.Dockerfile
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Worker.Dockerfile
     volumes:
       - ./src:/web/src
       - ./Data:/web/Data
@@ -54,10 +58,12 @@ services:
       - web
 
   web:
-    build: ./Dockerfiles/Dockerfile
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/Dockerfile
     restart: always
     ports:
-      - 5089:5089
+      - "5089:5089"
     stop_signal: SIGINT
     depends_on:
       - db
