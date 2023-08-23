@@ -16,8 +16,15 @@ class Config(object):
     PASSWORD = os.environ.get("DB_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
-    GOLD_QUERY_PATH = "/web/src/apps/oracle_db_services/Queries/gold.sql"
-    SILVER_QUERY_PATH = "/web/src/apps/oracle_db_services/Queries/silver.sql"
+    class DataBase(object):
+        HOST = os.environ.get("SUPP_DB_HOST")
+        PORT = os.environ.get("SUPP_DB_PORT")
+        SID = os.environ.get("SUPP_DB_SID")
+        USER = os.environ.get("SUPP_DB_USERNAME")
+        PASSWORD = os.environ.get("SUPP_DB_PASS")
+
+        GOLD_QUERY_PATH = "/web/src/apps/services/oracle_services/Queries/gold.sql"
+        SILVER_QUERY_PATH = "/web/src/apps/services/oracle_services/Queries/silver.sql"
 
     TABLES_LIST = [
         "role",
@@ -64,10 +71,10 @@ class Config(object):
 
 class ProductionConfig(Config):
     def __init__(self):
-        with open(self.GOLD_QUERY_PATH, "r") as f:
+        with open(self.DataBase.GOLD_QUERY_PATH, "r") as f:
             self.GOLD_QUERY = f.read()
 
-        with open(self.SILVER_QUERY_PATH, "r") as f:
+        with open(self.DataBase.SILVER_QUERY_PATH, "r") as f:
             self.SILVER_QUERY = f.read()
 
     ENV = "production"
