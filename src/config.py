@@ -72,10 +72,10 @@ class Config(object):
 class ProductionConfig(Config):
     def __init__(self):
         with open(self.DataBase.GOLD_QUERY_PATH, "r") as f:
-            self.GOLD_QUERY = f.read()
+            self.DataBase.GOLD_QUERY = f.read()
 
         with open(self.DataBase.SILVER_QUERY_PATH, "r") as f:
-            self.SILVER_QUERY = f.read()
+            self.DataBase.SILVER_QUERY = f.read()
 
     ENV = "production"
     DEBUG = False

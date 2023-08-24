@@ -46,8 +46,7 @@ def get_dataframe_from_parquet() -> pd.DataFrame:
     Reads data from a parquet file and stores it in a data frame.
     :return: extracted data
     """
-    df = pd.read_parquet(app_config.PARQUET_PATH)
-    return df.astype("str")
+    return pd.read_parquet(app_config.PARQUET_PATH)
 
 
 def save_to_parquet(dataframe: pd.DataFrame) -> None:
@@ -64,11 +63,7 @@ def get_dataframe_from_file() -> pd.DataFrame:
     Reads data from a excel file and stores it in a data frame.
     :return: extracted data
     """
-    dataframe: pd.DataFrame = pd.read_excel(
-        app_config.EXCEL_FILE_PATH,
-        dtype=str,
-    )
-    return dataframe
+    return pd.read_excel(app_config.EXCEL_FILE_PATH)
 
 
 def get_df() -> pd.DataFrame:
@@ -80,7 +75,7 @@ def get_df() -> pd.DataFrame:
         df = get_dataframe_from_file()
     else:
         df = get_data_from_db()
-    return df.fillna("None")
+    return df.astype("str").fillna("None")
 
 
 def add_frames_to_db(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
