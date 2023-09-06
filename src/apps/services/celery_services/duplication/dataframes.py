@@ -1,5 +1,6 @@
 import json
 from functools import reduce
+from flask_sqlalchemy.model import Model
 import pandas as pd
 
 from config import app_config
@@ -23,7 +24,6 @@ from apps.services.orm_db_services.models import (
     UsersLpu,
 )
 from apps.services.oracle_db_services.oracle_db import oracle_client
-from apps.services.orm_db_services.database import db
 
 # Index(['LOGIN_ID', 'LOGIN', 'LAST_NAME', 'FIRST_NAME', 'SECOND_NAME', 'SNILS', 'REGION_NAME',
 #        'PHONE', 'EMAIL', 'SPEC_NAME', 'SPEC_CODE', 'USER_ROLE', 'USER_ROLE_ID',
@@ -36,7 +36,9 @@ def get_data_from_db() -> pd.DataFrame:
     Executes a gold query, fetches the data, and converts it to a DataFrame.
     :return: extracted data as a DataFrame
     """
-    df = pd.read_sql(app_config.DataBase.GOLD_QUERY, con=oracle_client.conn)
+    df = pd.read_sql(
+        app_config.DataBase.GOLD_QUERY, con=oracle_client.conn  # pyright: ignore
+    )
     df.columns = df.columns.str.upper()
     return df
 
@@ -46,7 +48,7 @@ def get_dataframe_from_parquet() -> pd.DataFrame:
     Reads data from a parquet file and stores it in a data frame.
     :return: extracted data
     """
-    return pd.read_parquet(app_config.PARQUET_PATH)
+    return pd.read_parquet(app_config.PARQUET_PATH)  # pyright: ignore
 
 
 def save_to_parquet(dataframe: pd.DataFrame) -> None:
@@ -54,7 +56,7 @@ def save_to_parquet(dataframe: pd.DataFrame) -> None:
     Saves the dataframe to a parquet file and sets the 'data_in_parquet' boolean variable in Redis to True
     :param dataframe: extracted data
     """
-    dataframe.to_parquet(app_config.PARQUET_PATH, compression="gzip")
+    dataframe.to_parquet(app_config.PARQUET_PATH, compression="gzip")  # pyright: ignore
     redis_client.conn.set("data_in_parquet", "true")
 
 
@@ -63,7 +65,19 @@ def get_dataframe_from_file() -> pd.DataFrame:
     Reads data from a excel file and stores it in a data frame.
     :return: extracted data
     """
-    return pd.read_excel(app_config.EXCEL_FILE_PATH)
+    return pd.read_excel(app_config.EXCEL_FILE_PATH)  # pyright: ignore
+
+
+def tmp_func(frame: pd.DataFrame) -> None:
+    data = [
+        {"USER_ROLE_ID": 31, "USER_ROLE": "Регистратор ЛЛО"},
+        {"USER_ROLE_ID": 21, "USER_ROLE": "Администратор ЛЛО"},
+        {"USER_ROLE_ID": 101, "USER_ROLE": "Специалист по ЗК"},
+    ]
+    for row in data:
+        frame.loc[frame["USER_ROLE_ID"] == row["USER_ROLE_ID"], "USER_ROLE"] = row[
+            "USER_ROLE"
+        ]
 
 
 def get_df() -> pd.DataFrame:
@@ -75,10 +89,11 @@ def get_df() -> pd.DataFrame:
         df = get_dataframe_from_file()
     else:
         df = get_data_from_db()
+    tmp_func(df)
     return df.astype("str").fillna("None")
 
 
-def add_frames_to_db(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+def add_frames_to_db(frames: dict[Model, dict[str, pd.DataFrame]]) -> None:
     """
     For each model in frames add data to database.
     :param frames: dict of model and dataframes.
@@ -87,30 +102,12 @@ def add_frames_to_db(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
         add_model(frames[model]["new"], model)
 
 
-def del_frames_from_db(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
-    """
-    For each model in frames delete data from database.
-    :param frames: dict of model and dataframes.
-    """
-    for model in DeleteModels.MODELS:
-        del_model(frames[model]["del"], model)
-
-
-def update_frames_from_db(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
-    """
-    For each model in frames update data in database.
-    :param frames: dict of model and dataframes.
-    """
-    for model in UpdateModels.MODELS:
-        update_model(frames[model]["update"], model)
-
-
-def add_user_id_to_dataframes(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+def add_user_id_to_dataframes(frames: dict[Model, dict[str, pd.DataFrame]]) -> None:
     """
     Adds column 'USER_ID' to 'new' and 'del' dataframes with column 'LOGIN'.
     :param frames: dict of model and dataframes.
-    """
-    login_to_id = json.loads(redis_client.conn.get("login_to_id"))
+    """  # pyright: ignore
+    login_to_id = json.loads(redis_client.conn.get("login_to_id"))  # pyright: ignore
     for model in [AdditionalInfo, UsersSpec, UsersRole, UsersLpu, User]:
         if not frames[model]["new"].empty:
             frames[model]["new"]["USER_ID"] = frames[model]["new"].apply(
@@ -122,7 +119,7 @@ def add_user_id_to_dataframes(frames: dict[db.Model, dict[str, pd.DataFrame]]) -
             )
 
 
-def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
+def get_update_data(by_model: pd.DataFrame, model: Model) -> pd.DataFrame:
     """
     Retrieves data that needs to be updated in the database.
     Data needs to be in left and right dataframes (_merge == "both") and not 'on' columns should be different.
@@ -153,7 +150,7 @@ def get_update_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     return updated_data
 
 
-def get_del_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
+def get_del_data(by_model: pd.DataFrame, model: Model) -> pd.DataFrame:
     """
     Retrieves data that needs to be deleted from the database.
     Data needs to be only in left dataframe (_merge == "left_only").
@@ -173,7 +170,7 @@ def get_del_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     return del_data
 
 
-def get_new_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
+def get_new_data(by_model: pd.DataFrame, model: Model) -> pd.DataFrame:
     """
     Retrieves data that needs to be added in the database.
     Data needs to be only in right dataframe (_merge == "right_only").
@@ -192,17 +189,26 @@ def get_new_data(by_model: pd.DataFrame, model: db.Model) -> pd.DataFrame:
     return new_data
 
 
-def retrieves_data(
-    data_in_parquet=True,
-) -> tuple[dict[db.Model, dict[str, pd.DataFrame]], pd.DataFrame]:
+def init_redis_var() -> None:
+    """
+    Sets redis variables in the first update.
+    """
+    redis_client.conn.set("login_to_id", "{}")
+    redis_client.conn.delete("lpus_ids")
+
+
+def retrieves_data() -> tuple[dict[Model, dict[str, pd.DataFrame]], pd.DataFrame]:
     """
     Fetches data from parquet and database/excel, merges it by each model and retrieves data that needs to be added/deleted/updated in the database.
     If 'data_in_parquet' set to
         - False: than old dataframe init like empty
         - True: than data fetches from parquet
-    :param data_in_parquet: boolean values
     :return: retrieves data and new dataframe
     """
+    data_in_parquet = (
+        True if redis_client.conn.get("data_in_parquet") else init_redis_var()
+    )
+
     new_df = get_df()
     old_df = (
         get_dataframe_from_parquet()
@@ -237,7 +243,7 @@ def retrieves_data(
     return all_data, new_df
 
 
-def add_new_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+def add_new_data(frames: dict[Model, dict[str, pd.DataFrame]]) -> None:
     """
     Adds data to the database.
     Some models depend on "LOGIN_ID" and "LPU_ID", so we need to add "User" and "LPU" first.
@@ -252,17 +258,19 @@ def add_new_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
     add_frames_to_db(frames)
 
 
-def delete_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+def delete_data(frames: dict[Model, dict[str, pd.DataFrame]]) -> None:
     """
-    Deletes data from the database.
-    :param frames: fetched data to delete
+    For each model in frames delete data from database.
+    :param frames: dict of model and dataframes.
     """
-    del_frames_from_db(frames)
+    for model in DeleteModels.MODELS:
+        del_model(frames[model]["del"], model)
 
 
-def update_data(frames: dict[db.Model, dict[str, pd.DataFrame]]) -> None:
+def update_data(frames: dict[Model, dict[str, pd.DataFrame]]) -> None:
     """
-    Updates data in the database.
-    :param frames: fetched data to update
+    For each model in frames update data in database.
+    :param frames: dict of model and dataframes.
     """
-    update_frames_from_db(frames)
+    for model in UpdateModels.MODELS:
+        update_model(frames[model]["update"], model)

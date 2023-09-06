@@ -15,7 +15,7 @@ restart_db:
 	make up-db
 
 redis:
-	docker run --name redis -d --rm -p6379:6379 redis:latest
+	docker run --name redis -d --rm -p6379:6379 redis:7.2.0-alpine
 
 include .env
 local_up:

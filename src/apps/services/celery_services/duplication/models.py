@@ -1,5 +1,6 @@
 import json
 from functools import reduce
+from flask_sqlalchemy.model import Model
 import pandas as pd
 
 from wsgi import app
@@ -19,7 +20,7 @@ from apps.services.orm_db_services.models import (
 
 
 class MergeDataColumns:
-    MODELS = {
+    MODELS: dict[Model, dict]= {
         Specialities: {
             "columns": ["SPEC_CODE", "SPEC_NAME"],
             "on": ["SPEC_CODE"],
@@ -28,7 +29,7 @@ class MergeDataColumns:
         Role: {
             "columns": ["USER_ROLE_ID", "USER_ROLE"],
             "on": ["USER_ROLE_ID"],
-            "not_unique_cols": ["USER_ROLE"],
+            "not_unique_cols": ['USER_ROLE'],
         },
         Lpu: {
             "columns": ["LPU_ID", "LPU_NAME", "OGRN", "MO_ID", "MO_NAME"],
@@ -133,14 +134,19 @@ def add_lpus(frame: pd.DataFrame) -> None:
 
 def add_users(frame: pd.DataFrame) -> None:
     """
-    Creates list of '~apps.database_app.models.User', adds it to database and save dict 'login to id' in redis.
+    Creates list of '~apps.database_app.models.User', adds it to database and save dict 'login_to_id' in redis.
     :param frame: User's dataframe
     """
     if frame.empty:
         return
 
     users = []
-    json_lti = json.loads(redis_client.conn.get("login_to_id"))
+    json_lti_str: str | None = redis_client.conn.get('login_to_id')
+
+    if json_lti_str is None:
+        return
+
+    json_lti = json.loads(json_lti_str)
 
     frame.apply(
         lambda x: users.append(User(x)) if x["LOGIN"] not in json_lti else None, axis=1
@@ -157,7 +163,7 @@ def add_users(frame: pd.DataFrame) -> None:
     redis_client.conn.set("login_to_id", json_lti)
 
 
-def add_model(frame: pd.DataFrame, model: db.Model) -> None:
+def add_model(frame: pd.DataFrame, model: db.Model) -> None: # type: ignore
     """
     Creates list of '~apps.database_app.database.db.Model' and adds it to database.
     If model is User or Lpu, then does nothing.
@@ -175,7 +181,7 @@ def add_model(frame: pd.DataFrame, model: db.Model) -> None:
         db.session.commit()
 
 
-def del_model(frame: pd.DataFrame, model: db.Model) -> None:
+def del_model(frame: pd.DataFrame, model: db.Model) -> None: # type: ignore
     """
     Delete objects from database.
     :param frame: model's dataframe
@@ -207,7 +213,13 @@ def delete_users_id_from_redis(frame: pd.DataFrame) -> None:
     """
     if frame.empty:
         return
-    login_to_id: dict = json.loads(redis_client.conn.get("login_to_id"))
+
+    lti_str = redis_client.conn.get("login_to_id")
+
+    if lti_str is None:
+        return
+
+    login_to_id: dict = json.loads(lti_str)
     frame.apply(lambda row: login_to_id.pop(row["LOGIN"]), axis=1)
     json_lti = json.dumps(login_to_id)
     redis_client.conn.set("login_to_id", json_lti)
@@ -223,7 +235,7 @@ def delete_lpus_id_from_redis(frame: pd.DataFrame) -> None:
     redis_client.conn.srem("lpus_id", *frame["LPU_ID"])
 
 
-def update_model(frame: pd.DataFrame, model: db.Model) -> None:
+def update_model(frame: pd.DataFrame, model: db.Model) -> None: # type: ignore
     """
     Update objects in database.
     :param frame: model's dataframe
