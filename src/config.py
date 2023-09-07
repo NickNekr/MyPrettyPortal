@@ -80,9 +80,7 @@ class Config(object):
         USER = os.environ.get("SUPP_DB_USERNAME")
         PASSWORD = os.environ.get("SUPP_DB_PASS")
 
-        GOLD_QUERY_PATH = (
-            "/web/src/apps/services/oracle_db_services/Queries/gold_light.sql"
-        )
+        GOLD_QUERY_PATH = "/web/src/apps/services/oracle_db_services/Queries/gold.sql"
 
     TABLES_LIST = [
         "role",
