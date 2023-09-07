@@ -24,6 +24,7 @@ from apps.services.orm_db_services.models import (
     UsersLpu,
 )
 from apps.services.oracle_db_services.oracle_db import oracle_client
+from apps.services.celery_services.duplication.unique import unique_test
 
 # Index(['LOGIN_ID', 'LOGIN', 'LAST_NAME', 'FIRST_NAME', 'SECOND_NAME', 'SNILS', 'REGION_NAME',
 #        'PHONE', 'EMAIL', 'SPEC_NAME', 'SPEC_CODE', 'USER_ROLE', 'USER_ROLE_ID',
@@ -68,16 +69,9 @@ def get_dataframe_from_file() -> pd.DataFrame:
     return pd.read_excel(app_config.EXCEL_FILE_PATH)  # pyright: ignore
 
 
-def tmp_func(frame: pd.DataFrame) -> None:
-    data = [
-        {"USER_ROLE_ID": 31, "USER_ROLE": "Регистратор ЛЛО"},
-        {"USER_ROLE_ID": 21, "USER_ROLE": "Администратор ЛЛО"},
-        {"USER_ROLE_ID": 101, "USER_ROLE": "Специалист по ЗК"},
-    ]
-    for row in data:
-        frame.loc[frame["USER_ROLE_ID"] == row["USER_ROLE_ID"], "USER_ROLE"] = row[
-            "USER_ROLE"
-        ]
+def tmp_crutch(frame: pd.DataFrame) -> None:
+    for row in app_config.CONSISTENT_DATA:
+        frame.loc[frame[row.id_name] == row.id, row.value_name] = row.value
 
 
 def get_df() -> pd.DataFrame:
@@ -89,7 +83,8 @@ def get_df() -> pd.DataFrame:
         df = get_dataframe_from_file()
     else:
         df = get_data_from_db()
-    tmp_func(df)
+    unique_test(df)
+    tmp_crutch(df)
     return df.astype("str").fillna("None")
 
 

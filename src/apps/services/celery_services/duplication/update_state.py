@@ -23,7 +23,6 @@ def update_database() -> None:
     5. Saves the new dataframe 'new_df' to Parquet format using the 'save_to_parquet()'.
     """
     dict_dataframes, new_df = retrieves_data()
-    print(dict_dataframes)
     add_new_data(dict_dataframes)
     delete_data(dict_dataframes)
     update_data(dict_dataframes)

@@ -6,6 +6,14 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv()
 
 
+class Consistency(object):
+    def __init__(self, id_name, id, value_name, value) -> None:
+        self.id_name = id_name
+        self.id = id
+        self.value_name = value_name
+        self.value = value
+
+
 class Config(object):
     TZ = os.environ.get("DB_TIMEZONE")
 
@@ -17,6 +25,53 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = f"postgresql://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DB}"
 
     PARQUET_PATH = "/web/Data/database.parquet"
+
+    class UniqueTest:
+        MODELS = [
+            {
+                "columns": ["SPEC_CODE", "SPEC_NAME"],
+                "unique": "SPEC_CODE",
+                "not_unique_cols": "SPEC_NAME",
+            },
+            {
+                "columns": ["USER_ROLE_ID", "USER_ROLE"],
+                "unique": "USER_ROLE_ID",
+                "not_unique_cols": "USER_ROLE",
+            },
+            {
+                "columns": ["LPU_ID", "LPU_NAME"],
+                "unique": "LPU_ID",
+                "not_unique_cols": "LPU_NAME",
+            },
+            {
+                "columns": ["MO_ID", "MO_NAME"],
+                "unique": "MO_ID",
+                "not_unique_cols": "MO_NAME",
+            },
+        ]
+
+    NOT_CONSISTENT_DATA = {
+        "USER_ROLE_ID": [
+            {
+                "USER_ROLE_ID": 21,
+            },
+            {
+                "USER_ROLE_ID": 31,
+            },
+            {
+                "USER_ROLE_ID": 101,
+            },
+        ],
+        "LPU_ID": [],
+        "MO_ID": [],
+        "SPEC_CODE": [],
+    }
+
+    CONSISTENT_DATA = [
+        Consistency("USER_ROLE_ID", 31, "USER_ROLE", "Регистратор ЛЛО"),
+        Consistency("USER_ROLE_ID", 21, "USER_ROLE", "Администратор ЛЛО"),
+        Consistency("USER_ROLE_ID", 101, "USER_ROLE", "Специалист по ЗК"),
+    ]
 
     class DataBase(object):
         HOST = os.environ.get("SUPP_DB_HOST")
@@ -93,4 +148,4 @@ class TestingConfig(Config):
     DEBUG = True
 
 
-app_config = ProductionConfig()
+app_config = DevelopmentConfig()
