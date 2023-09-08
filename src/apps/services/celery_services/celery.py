@@ -1,9 +1,3 @@
-from celery import Celery
+from apps.services.celery_services import create_celery
 
-from config import app_config
-
-celery_app = Celery(
-    "duplication",
-)
-
-celery_app.config_from_object(app_config.CeleryConfig)
+celery_app = create_celery()

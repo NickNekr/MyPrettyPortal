@@ -52,7 +52,7 @@ services:
       - sh
       - -c
       - |
-        cd src && LD_LIBRARY_PATH=/opt/oracle/instantclient_21_11 poetry run celery --app=apps.services.celery_services.celery worker --loglevel=INFO -f /web/src/loggers/logs/worker.log
+        cd src && LD_LIBRARY_PATH=/opt/oracle/instantclient_21_11 poetry run celery --app=apps.services.celery_services.celery worker --loglevel=INFO -f /web/src/logs/worker.log
     depends_on:
       - redis
       - web
