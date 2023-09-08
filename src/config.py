@@ -105,6 +105,7 @@ class Config(object):
         OK = 200
         NOT_FOUND = 404
         BAD_REQUEST = 400
+        ACCEPTED = 202
 
     class CeleryConfig(object):
         broker_url = "redis://redis:6379/0"
@@ -123,6 +124,11 @@ class Config(object):
         }
 
         beat_schedule_timezone = "Europe/Moscow"
+
+    class TelegramConfig(object):
+        TOKEN = os.environ.get("BOT_TOKEN")
+        CHAT_ID = 1064214243
+        BASE_URL = f"https://api.telegram.org/bot{TOKEN}/"
 
 
 class ProductionConfig(Config):

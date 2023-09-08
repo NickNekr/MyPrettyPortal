@@ -1,5 +1,5 @@
-from apps.services.celery_services.duplication.dataframes import (
-    save_to_parquet,
+from apps.services.celery_services.duplication.dataframes import save_to_parquet
+from apps.services.celery_services.duplication.decompostion_data import (
     retrieves_data,
     add_new_data,
     delete_data,

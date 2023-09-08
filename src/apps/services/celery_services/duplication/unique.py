@@ -1,6 +1,7 @@
 import json
 
 from config import app_config
+from apps.services.notification.telegram import send_message
 
 
 def unique_test(df):
@@ -22,4 +23,7 @@ def unique_test(df):
                 not_consistent_data
                 != app_config.NOT_CONSISTENT_DATA[unique_data["unique"]]
             ):
+                send_message(
+                    "Wake up, you have NOT_CONSISTENT_DATA! With love from SUPP <3"
+                )
                 raise Exception(json.dumps(not_consistent_data, indent=4))

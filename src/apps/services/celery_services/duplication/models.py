@@ -125,9 +125,8 @@ def add_lpus(frame: pd.DataFrame) -> None:
         axis=1,
     )
 
-    with app.app_context():
-        db.session.add_all(lpus)
-        db.session.commit()
+    db.session.add_all(lpus)
+    db.session.commit()
 
     redis_client.conn.sadd("lpus_ids", *added_lpus)
 
@@ -176,9 +175,8 @@ def add_model(frame: pd.DataFrame, model: db.Model) -> None:  # type: ignore
     models = []
     frame.apply(lambda x: models.append(model(x)), axis=1)
 
-    with app.app_context():
-        db.session.add_all(models)
-        db.session.commit()
+    db.session.add_all(models)
+    db.session.commit()
 
 
 def del_model(frame: pd.DataFrame, model: db.Model) -> None:  # type: ignore
@@ -189,17 +187,16 @@ def del_model(frame: pd.DataFrame, model: db.Model) -> None:  # type: ignore
     """
     if frame.empty:
         return
-    with app.app_context():
-        frame.apply(
-            lambda row: model.query.filter(
-                reduce(
-                    lambda acc, item: acc & item,
-                    [pair[0] == row[pair[1]] for pair in DeleteModels.MODELS[model]],
-                )
-            ).delete(),
-            axis=1,
-        )
-        db.session.commit()
+    frame.apply(
+        lambda row: model.query.filter(
+            reduce(
+                lambda acc, item: acc & item,
+                [pair[0] == row[pair[1]] for pair in DeleteModels.MODELS[model]],
+            )
+        ).delete(),
+        axis=1,
+    )
+    db.session.commit()
     if model == User:
         delete_users_id_from_redis(frame)
     if model == Lpu:
@@ -216,10 +213,7 @@ def delete_users_id_from_redis(frame: pd.DataFrame) -> None:
 
     lti_str = redis_client.conn.get("login_to_id")
 
-    if lti_str is None:
-        return
-
-    login_to_id: dict = json.loads(lti_str)
+    login_to_id: dict = json.loads(lti_str)  # type: ignore
     frame.apply(lambda row: login_to_id.pop(row["LOGIN"]), axis=1)
     json_lti = json.dumps(login_to_id)
     redis_client.conn.set("login_to_id", json_lti)
